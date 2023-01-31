@@ -2,8 +2,8 @@ export default class Slide {
   private slides;
   private controls;
   private index = 0;
-  readonly PREV_BUTTON_TEXT = "<<<";
-  readonly NEXT_BUTTON_TEXT = ">>>";
+  readonly PREV_BUTTON_TEXT = "Previous image";
+  readonly NEXT_BUTTON_TEXT = "Next image";
 
   constructor(slideContainer: Element, slides: Element[], controls: Element, timer: number = 2000) {
     this.slides = slides;
@@ -25,6 +25,10 @@ export default class Slide {
       this.removeClassActive();
       this.index++;
       this.slides[this.index].classList.add("active");
+    } else {
+      this.removeClassActive();
+      this.index = 0;
+      this.slides[this.index].classList.add("active");
     }
   }
 
@@ -32,6 +36,10 @@ export default class Slide {
     if (this.index > 0) {
       this.removeClassActive();
       this.index--;
+      this.slides[this.index].classList.add("active");
+    } else {
+      this.removeClassActive();
+      this.index = this.slides.length - 1;
       this.slides[this.index].classList.add("active");
     }
   }

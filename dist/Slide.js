@@ -2,8 +2,8 @@ export default class Slide {
     slides;
     controls;
     index = 0;
-    PREV_BUTTON_TEXT = "<<<";
-    NEXT_BUTTON_TEXT = ">>>";
+    PREV_BUTTON_TEXT = "Previous image";
+    NEXT_BUTTON_TEXT = "Next image";
     constructor(slideContainer, slides, controls, timer = 2000) {
         this.slides = slides;
         this.controls = controls;
@@ -22,11 +22,21 @@ export default class Slide {
             this.index++;
             this.slides[this.index].classList.add("active");
         }
+        else {
+            this.removeClassActive();
+            this.index = 0;
+            this.slides[this.index].classList.add("active");
+        }
     }
     showSlidePrev() {
         if (this.index > 0) {
             this.removeClassActive();
             this.index--;
+            this.slides[this.index].classList.add("active");
+        }
+        else {
+            this.removeClassActive();
+            this.index = this.slides.length - 1;
             this.slides[this.index].classList.add("active");
         }
     }
