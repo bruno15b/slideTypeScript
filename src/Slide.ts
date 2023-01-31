@@ -1,17 +1,32 @@
+import TimeInterval from "./TimeInterval.js";
+
 export default class Slide {
+  private slideContainer;
   private slides;
   private controls;
+  private timer;
   private index = 0;
   readonly PREV_BUTTON_TEXT = "Previous image";
-  readonly NEXT_BUTTON_TEXT = "Next image";
+  readonly NEXT_BUTTON_TEXT = "next image";
+  private timerInterval: TimeInterval | null;
 
-  constructor(slideContainer: Element, slides: Element[], controls: Element, timer: number = 2000) {
+  constructor(slideContainer: Element, slides: Element[], controls: Element, timer: number = 5000) {
+    this.slideContainer = slideContainer;
     this.slides = slides;
     this.controls = controls;
+    this.timer = timer;
+
+    this.timerInterval = null;
   }
 
   initSlide() {
     this.createControls();
+    this.startAutoSlideShow();
+  }
+
+  private startAutoSlideShow() {
+    this.timerInterval?.clear();
+    this.timerInterval = new TimeInterval(() => this.showSlideNext(), this.timer);
   }
 
   private removeClassActive() {
@@ -48,8 +63,15 @@ export default class Slide {
     const prevButton = this.createButton(this.PREV_BUTTON_TEXT);
     const nextButton = this.createButton(this.NEXT_BUTTON_TEXT);
 
-    this.addClickListener(prevButton, () => this.showSlidePrev());
-    this.addClickListener(nextButton, () => this.showSlideNext());
+    this.addClickListener(prevButton, () => {
+      this.showSlidePrev();
+      this.startAutoSlideShow();
+    });
+
+    this.addClickListener(nextButton, () => {
+      this.showSlideNext();
+      this.startAutoSlideShow();
+    });
   }
 
   private createButton(text: string) {

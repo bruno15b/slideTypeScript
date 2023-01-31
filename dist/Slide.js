@@ -1,15 +1,27 @@
+import TimeInterval from "./TimeInterval.js";
 export default class Slide {
+    slideContainer;
     slides;
     controls;
+    timer;
     index = 0;
     PREV_BUTTON_TEXT = "Previous image";
-    NEXT_BUTTON_TEXT = "Next image";
-    constructor(slideContainer, slides, controls, timer = 2000) {
+    NEXT_BUTTON_TEXT = "next image";
+    timerInterval;
+    constructor(slideContainer, slides, controls, timer = 5000) {
+        this.slideContainer = slideContainer;
         this.slides = slides;
         this.controls = controls;
+        this.timer = timer;
+        this.timerInterval = null;
     }
     initSlide() {
         this.createControls();
+        this.startAutoSlideShow();
+    }
+    startAutoSlideShow() {
+        this.timerInterval?.clear();
+        this.timerInterval = new TimeInterval(() => this.showSlideNext(), this.timer);
     }
     removeClassActive() {
         this.slides.forEach((slide) => {
@@ -43,8 +55,14 @@ export default class Slide {
     createControls() {
         const prevButton = this.createButton(this.PREV_BUTTON_TEXT);
         const nextButton = this.createButton(this.NEXT_BUTTON_TEXT);
-        this.addClickListener(prevButton, () => this.showSlidePrev());
-        this.addClickListener(nextButton, () => this.showSlideNext());
+        this.addClickListener(prevButton, () => {
+            this.showSlidePrev();
+            this.startAutoSlideShow();
+        });
+        this.addClickListener(nextButton, () => {
+            this.showSlideNext();
+            this.startAutoSlideShow();
+        });
     }
     createButton(text) {
         const button = document.createElement("button");
