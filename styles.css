@@ -1,0 +1,33 @@
+.slide-pages {
+  display: grid;
+}
+
+.slide-pages > * {
+  display: block;
+  max-width: 100%;
+  grid-area: 1/1;
+  opacity: 0;
+  visibility: none;
+}
+
+.slide-pages > .active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.slide-controls {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 30px;
+}
+
+.slide-controls > * {
+  padding: 10px;
+  background-color: rgb(101, 101, 209);
+  border: 1px solid black;
+}
+
+.slide-controls > *:hover {
+  padding: 10px;
+  background-color: rgb(55, 55, 197);
+}
