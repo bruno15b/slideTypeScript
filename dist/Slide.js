@@ -24,23 +24,45 @@ export default class Slide {
     }
     startAutoSlideShow() {
         this.timerInterval?.clearInterval();
-        this.timerInterval = new TimeInterval(() => this.showSlideNext(), this.timer);
+        if (this.slides[this.index] instanceof HTMLVideoElement) {
+            this.autoVideo(this.slides[this.index]);
+        }
+        else {
+            this.timerInterval = new TimeInterval(() => this.showSlideNext(), this.timer);
+        }
     }
-    removeClassActive() {
+    autoVideo(video) {
+        video.muted = true;
+        video.play();
+        let firstPlay = true;
+        video.addEventListener("playing", () => {
+            if (firstPlay)
+                this.timerInterval = new TimeInterval(() => this.showSlideNext(), video.duration * 1000);
+            firstPlay = false;
+        });
+    }
+    removeActiveClassFromSlides() {
         this.slides.forEach((slide) => {
             slide.classList.remove("active");
+            if (slide instanceof HTMLVideoElement) {
+                this.resetVideo(slide);
+            }
         });
+    }
+    resetVideo(video) {
+        video.currentTime = 0;
+        video.pause();
     }
     showSlideNext() {
         if (this.paused)
             return;
         if (this.index < this.slides.length - 1) {
-            this.removeClassActive();
+            this.removeActiveClassFromSlides();
             this.index++;
             this.slides[this.index].classList.add("active");
         }
         else {
-            this.removeClassActive();
+            this.removeActiveClassFromSlides();
             this.index = 0;
             this.slides[this.index].classList.add("active");
         }
@@ -50,29 +72,37 @@ export default class Slide {
         if (this.paused)
             return;
         if (this.index > 0) {
-            this.removeClassActive();
+            this.removeActiveClassFromSlides();
             this.index--;
             this.slides[this.index].classList.add("active");
         }
         else {
-            this.removeClassActive();
+            this.removeActiveClassFromSlides();
             this.index = this.slides.length - 1;
             this.slides[this.index].classList.add("active");
         }
         this.startAutoSlideShow();
     }
-    pause() {
+    pauseSlideShow() {
         this.pausedInterval = new TimeInterval(() => {
             this.timerInterval?.pauseInterval();
             this.pausedInterval?.clearInterval();
             this.paused = true;
+            if (this.slides[this.index] instanceof HTMLVideoElement) {
+                const video = this.slides[this.index];
+                video.pause();
+            }
         }, 300);
     }
-    continue() {
+    continueSlideShow() {
         this.pausedInterval?.clearInterval();
         if (this.paused) {
             this.paused = false;
             this.timerInterval?.resumeInterval();
+            if (this.slides[this.index] instanceof HTMLVideoElement) {
+                const video = this.slides[this.index];
+                video.play();
+            }
         }
     }
     createButton(text) {
@@ -85,8 +115,8 @@ export default class Slide {
         const prevButton = this.createButton(this.PREV_BUTTON_TEXT);
         const nextButton = this.createButton(this.NEXT_BUTTON_TEXT);
         this.slideContainer.addEventListener("pointerdown", () => console.log("teste"));
-        this.controls.addEventListener("pointerdown", () => this.pause());
-        this.controls.addEventListener("pointerup", () => this.continue());
+        this.controls.addEventListener("pointerdown", () => this.pauseSlideShow());
+        this.controls.addEventListener("pointerup", () => this.continueSlideShow());
         nextButton.addEventListener("pointerup", () => this.showSlideNext());
         prevButton.addEventListener("pointerup", () => this.showSlidePrev());
     }

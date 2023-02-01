@@ -17,9 +17,7 @@ export default class TimeInterval {
 
   pauseInterval() {
     const passed = Date.now() - this.start;
-    console.log(passed);
     this.remainingTime = this.remainingTime - passed;
-    console.log(this.remainingTime);
     this.clearInterval();
   }
 
