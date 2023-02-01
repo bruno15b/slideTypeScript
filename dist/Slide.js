@@ -8,19 +8,22 @@ export default class Slide {
     PREV_BUTTON_TEXT = "Previous image";
     NEXT_BUTTON_TEXT = "next image";
     timerInterval;
+    pausedInterval;
+    paused = false;
     constructor(slideContainer, slides, controls, timer = 5000) {
         this.slideContainer = slideContainer;
         this.slides = slides;
         this.controls = controls;
         this.timer = timer;
         this.timerInterval = null;
+        this.pausedInterval = null;
     }
     initSlide() {
         this.createControls();
         this.startAutoSlideShow();
     }
     startAutoSlideShow() {
-        this.timerInterval?.clear();
+        this.timerInterval?.clearInterval();
         this.timerInterval = new TimeInterval(() => this.showSlideNext(), this.timer);
     }
     removeClassActive() {
@@ -29,6 +32,8 @@ export default class Slide {
         });
     }
     showSlideNext() {
+        if (this.paused)
+            return;
         if (this.index < this.slides.length - 1) {
             this.removeClassActive();
             this.index++;
@@ -39,8 +44,11 @@ export default class Slide {
             this.index = 0;
             this.slides[this.index].classList.add("active");
         }
+        this.startAutoSlideShow();
     }
     showSlidePrev() {
+        if (this.paused)
+            return;
         if (this.index > 0) {
             this.removeClassActive();
             this.index--;
@@ -51,18 +59,21 @@ export default class Slide {
             this.index = this.slides.length - 1;
             this.slides[this.index].classList.add("active");
         }
+        this.startAutoSlideShow();
     }
-    createControls() {
-        const prevButton = this.createButton(this.PREV_BUTTON_TEXT);
-        const nextButton = this.createButton(this.NEXT_BUTTON_TEXT);
-        this.addClickListener(prevButton, () => {
-            this.showSlidePrev();
-            this.startAutoSlideShow();
-        });
-        this.addClickListener(nextButton, () => {
-            this.showSlideNext();
-            this.startAutoSlideShow();
-        });
+    pause() {
+        this.pausedInterval = new TimeInterval(() => {
+            this.timerInterval?.pauseInterval();
+            this.pausedInterval?.clearInterval();
+            this.paused = true;
+        }, 300);
+    }
+    continue() {
+        this.pausedInterval?.clearInterval();
+        if (this.paused) {
+            this.paused = false;
+            this.timerInterval?.resumeInterval();
+        }
     }
     createButton(text) {
         const button = document.createElement("button");
@@ -70,8 +81,14 @@ export default class Slide {
         this.controls.appendChild(button);
         return button;
     }
-    addClickListener(button, callback) {
-        button.addEventListener("click", () => callback());
+    createControls() {
+        const prevButton = this.createButton(this.PREV_BUTTON_TEXT);
+        const nextButton = this.createButton(this.NEXT_BUTTON_TEXT);
+        this.slideContainer.addEventListener("pointerdown", () => console.log("teste"));
+        this.controls.addEventListener("pointerdown", () => this.pause());
+        this.controls.addEventListener("pointerup", () => this.continue());
+        nextButton.addEventListener("pointerup", () => this.showSlideNext());
+        prevButton.addEventListener("pointerup", () => this.showSlidePrev());
     }
 }
 //# sourceMappingURL=Slide.js.map

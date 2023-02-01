@@ -9,6 +9,8 @@ export default class Slide {
   readonly PREV_BUTTON_TEXT = "Previous image";
   readonly NEXT_BUTTON_TEXT = "next image";
   private timerInterval: TimeInterval | null;
+  private pausedInterval: TimeInterval | null;
+  private paused: boolean = false;
 
   constructor(slideContainer: Element, slides: Element[], controls: Element, timer: number = 5000) {
     this.slideContainer = slideContainer;
@@ -17,6 +19,7 @@ export default class Slide {
     this.timer = timer;
 
     this.timerInterval = null;
+    this.pausedInterval = null;
   }
 
   initSlide() {
@@ -25,7 +28,7 @@ export default class Slide {
   }
 
   private startAutoSlideShow() {
-    this.timerInterval?.clear();
+    this.timerInterval?.clearInterval();
     this.timerInterval = new TimeInterval(() => this.showSlideNext(), this.timer);
   }
 
@@ -36,6 +39,7 @@ export default class Slide {
   }
 
   private showSlideNext() {
+    if (this.paused) return;
     if (this.index < this.slides.length - 1) {
       this.removeClassActive();
       this.index++;
@@ -45,9 +49,11 @@ export default class Slide {
       this.index = 0;
       this.slides[this.index].classList.add("active");
     }
+    this.startAutoSlideShow();
   }
 
   private showSlidePrev() {
+    if (this.paused) return;
     if (this.index > 0) {
       this.removeClassActive();
       this.index--;
@@ -57,21 +63,23 @@ export default class Slide {
       this.index = this.slides.length - 1;
       this.slides[this.index].classList.add("active");
     }
+    this.startAutoSlideShow();
   }
 
-  private createControls() {
-    const prevButton = this.createButton(this.PREV_BUTTON_TEXT);
-    const nextButton = this.createButton(this.NEXT_BUTTON_TEXT);
+  private pause() {
+    this.pausedInterval = new TimeInterval(() => {
+      this.timerInterval?.pauseInterval();
+      this.pausedInterval?.clearInterval();
+      this.paused = true;
+    }, 300);
+  }
 
-    this.addClickListener(prevButton, () => {
-      this.showSlidePrev();
-      this.startAutoSlideShow();
-    });
-
-    this.addClickListener(nextButton, () => {
-      this.showSlideNext();
-      this.startAutoSlideShow();
-    });
+  private continue() {
+    this.pausedInterval?.clearInterval();
+    if (this.paused) {
+      this.paused = false;
+      this.timerInterval?.resumeInterval();
+    }
   }
 
   private createButton(text: string) {
@@ -82,7 +90,16 @@ export default class Slide {
     return button;
   }
 
-  private addClickListener(button: Element, callback: Function) {
-    button.addEventListener("click", () => callback());
+  private createControls() {
+    const prevButton = this.createButton(this.PREV_BUTTON_TEXT);
+    const nextButton = this.createButton(this.NEXT_BUTTON_TEXT);
+
+    this.slideContainer.addEventListener("pointerdown", () => console.log("teste"));
+
+    this.controls.addEventListener("pointerdown", () => this.pause());
+    this.controls.addEventListener("pointerup", () => this.continue());
+
+    nextButton.addEventListener("pointerup", () => this.showSlideNext());
+    prevButton.addEventListener("pointerup", () => this.showSlidePrev());
   }
 }
