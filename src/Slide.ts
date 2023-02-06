@@ -10,6 +10,8 @@ export default class Slide {
   readonly NEXT_BUTTON_TEXT = "next image";
   private timerInterval: TimeInterval | null;
   private pausedInterval: TimeInterval | null;
+  private thumbItems: HTMLElement[] | null;
+  private thumb: HTMLElement | null;
   private paused: boolean = false;
 
   constructor(slideContainer: Element, slides: Element[], controls: Element, timer: number = 5000) {
@@ -20,10 +22,13 @@ export default class Slide {
 
     this.timerInterval = null;
     this.pausedInterval = null;
+    this.thumbItems = null;
+    this.thumb = null;
   }
 
   initSlide() {
     this.createControls();
+    this.createThumbItems();
     this.startAutoSlideShow();
   }
 
@@ -33,6 +38,22 @@ export default class Slide {
       this.autoVideo(this.slides[this.index] as HTMLVideoElement);
     } else {
       this.timerInterval = new TimeInterval(() => this.showSlideNext(), this.timer);
+    }
+
+    if (this.thumbItems) {
+      this.thumb = this.thumbItems[this.index];
+      this.setTimerThumb(this.thumb);
+      this.thumbItems.forEach((thumb) => thumb.classList.remove("active"));
+      this.thumb.classList.add("active");
+    }
+  }
+
+  private setTimerThumb(thumb: HTMLElement) {
+    if (this.slides[this.index] instanceof HTMLVideoElement) {
+      const slide = this.slides[this.index] as HTMLVideoElement;
+      thumb.style.animationDuration = `${slide.duration}s`;
+    } else {
+      thumb.style.animationDuration = `${this.timer}ms`;
     }
   }
 
@@ -93,6 +114,7 @@ export default class Slide {
       this.timerInterval?.pauseInterval();
       this.pausedInterval?.clearInterval();
       this.paused = true;
+      this.thumb?.classList.add("paused");
       if (this.slides[this.index] instanceof HTMLVideoElement) {
         const video = this.slides[this.index] as HTMLVideoElement;
         video.pause();
@@ -105,6 +127,7 @@ export default class Slide {
     if (this.paused) {
       this.paused = false;
       this.timerInterval?.resumeInterval();
+      this.thumb?.classList.remove("paused");
       if (this.slides[this.index] instanceof HTMLVideoElement) {
         const video = this.slides[this.index] as HTMLVideoElement;
         video.play();
@@ -131,5 +154,15 @@ export default class Slide {
 
     nextButton.addEventListener("pointerup", () => this.showSlideNext());
     prevButton.addEventListener("pointerup", () => this.showSlidePrev());
+  }
+
+  private createThumbItems() {
+    const thumContainer = document.createElement("div");
+    thumContainer.id = "slide-thumb";
+    for (let i = 0; i < this.slides.length; i++) {
+      thumContainer.innerHTML += `<span><span class="thumb-item"></span></span>`;
+    }
+    this.controls.appendChild(thumContainer);
+    this.thumbItems = Array.from(document.querySelectorAll(".thumb-item"));
   }
 }
