@@ -110,6 +110,7 @@ export default class Slide {
   }
 
   private pauseSlideShow() {
+    document.body.classList.add("paused");
     this.pausedInterval = new TimeInterval(() => {
       this.timerInterval?.pauseInterval();
       this.pausedInterval?.clearInterval();
@@ -123,6 +124,7 @@ export default class Slide {
   }
 
   private continueSlideShow() {
+    document.body.classList.remove("paused");
     this.pausedInterval?.clearInterval();
     if (this.paused) {
       this.paused = false;
@@ -150,7 +152,8 @@ export default class Slide {
     this.slideContainer.addEventListener("pointerdown", () => console.log("teste"));
 
     this.controls.addEventListener("pointerdown", () => this.pauseSlideShow());
-    this.controls.addEventListener("pointerup", () => this.continueSlideShow());
+    document.addEventListener("pointerup", () => this.continueSlideShow());
+    document.addEventListener("touchend", () => this.continueSlideShow());
 
     nextButton.addEventListener("pointerup", () => this.showSlideNext());
     prevButton.addEventListener("pointerup", () => this.showSlidePrev());
